@@ -1,4 +1,5 @@
 import { buildDailyIdeasPrompt, buildDigytalabImagePrompt } from "@/features/prompts/prompt-builder";
+import { getRequestLogContext, logApiError } from "@/lib/api-logging";
 import { generateId } from "@/lib/id";
 import { query } from "@/lib/postgres";
 import { BrandProfile } from "@/types/brand";
@@ -68,6 +69,8 @@ type ExistingIdeaRow = {
 
 export async function POST(request: Request) {
   const apiKey = process.env.GEMINI_API_KEY;
+  let logFormatMode = "unknown";
+  let postingDate = "unknown";
 
   if (!apiKey) {
     return Response.json(
@@ -78,6 +81,9 @@ export async function POST(request: Request) {
 
   try {
     const body = (await request.json()) as DailyIdeasRequest;
+    const formatMode = body.formatMode || "mixed";
+    logFormatMode = formatMode;
+    postingDate = body.postingDate || "unknown";
 
     if (!body.brand) {
       return Response.json({ message: "Brand Brain belum tersedia." }, { status: 400 });
@@ -87,7 +93,6 @@ export async function POST(request: Request) {
       return Response.json({ message: "Tanggal posting wajib diisi." }, { status: 400 });
     }
 
-    const formatMode = body.formatMode || "mixed";
     const carouselSlideCount = clampCarouselSlideCount(body.carouselSlideCount);
     const existingIdeaSummaries = await getExistingIdeaSummaries(body.currentIdeaSummaries || []);
     const usedKeys = new Set(existingIdeaSummaries.map(normalizeIdeaKey));
@@ -137,6 +142,12 @@ export async function POST(request: Request) {
 
     return Response.json({ ideas: validIdeas });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/content-ideas",
+      ...getRequestLogContext(request),
+      metadata: { formatMode: logFormatMode, postingDate },
+    });
+
     return Response.json(
       { message: error instanceof Error ? error.message : "Gagal memproses generate ide harian." },
       { status: 500 }

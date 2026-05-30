@@ -1,3 +1,4 @@
+import { getRequestLogContext, logApiError } from "@/lib/api-logging";
 import { query } from "@/lib/postgres";
 import { ContentDraftBase } from "@/types/content";
 
@@ -7,7 +8,7 @@ type DraftRow = {
   payload: ContentDraftBase;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const result = await query<DraftRow>(
       `SELECT payload FROM content_drafts ORDER BY updated_at DESC`
@@ -15,13 +16,23 @@ export async function GET() {
 
     return Response.json({ drafts: result.rows.map((row) => row.payload) });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/drafts",
+      ...getRequestLogContext(request),
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  let draftId = "unknown";
+  let draftFormat = "unknown";
+
   try {
     const draft = (await request.json()) as ContentDraftBase;
+    draftId = draft.id || "unknown";
+    draftFormat = draft.format || "unknown";
 
     if (!draft.id || !draft.format || !draft.title) {
       return Response.json({ message: "Draft tidak lengkap." }, { status: 400 });
@@ -30,6 +41,12 @@ export async function POST(request: Request) {
     const savedDraft = await saveDraft(draft);
     return Response.json({ draft: savedDraft });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/drafts",
+      ...getRequestLogContext(request),
+      metadata: { draftId, draftFormat },
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }

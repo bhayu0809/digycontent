@@ -1,3 +1,4 @@
+import { getRequestLogContext, logApiError } from "@/lib/api-logging";
 import { query } from "@/lib/postgres";
 import { BrandProfile } from "@/types/brand";
 
@@ -18,9 +19,11 @@ type BrandProfileRow = {
 };
 
 export async function GET(request: Request) {
+  let id = "default";
+
   try {
     const url = new URL(request.url);
-    const id = url.searchParams.get("id") || "default";
+    id = url.searchParams.get("id") || "default";
     const result = await query<BrandProfileRow>(
       `SELECT * FROM brand_profiles WHERE id = $1 LIMIT 1`,
       [id]
@@ -32,17 +35,26 @@ export async function GET(request: Request) {
 
     return Response.json({ profile: mapRowToBrandProfile(result.rows[0]) });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/brand",
+      ...getRequestLogContext(request),
+      searchParams: { id },
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  let profileId = "unknown";
+
   try {
     const profile = (await request.json()) as BrandProfile;
+    profileId = profile.id || "default";
     const updatedAt = new Date().toISOString();
     const payload: BrandProfile = {
       ...profile,
-      id: profile.id || "default",
+      id: profileId,
       offers: profile.offers || [],
       contentRules: profile.contentRules || [],
       forbiddenStyles: profile.forbiddenStyles || [],
@@ -85,6 +97,12 @@ export async function POST(request: Request) {
 
     return Response.json({ profile: payload });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/brand",
+      ...getRequestLogContext(request),
+      metadata: { profileId },
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }

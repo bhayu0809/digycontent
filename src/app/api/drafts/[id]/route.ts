@@ -1,3 +1,4 @@
+import { getRequestLogContext, logApiError } from "@/lib/api-logging";
 import { query } from "@/lib/postgres";
 import { generateId } from "@/lib/id";
 import { ContentDraftBase, ContentStatus } from "@/types/content";
@@ -19,9 +20,12 @@ type DraftPatchBody = {
   notes?: string;
 };
 
-export async function GET(_request: Request, { params }: RouteContext) {
+export async function GET(request: Request, { params }: RouteContext) {
+  let draftId = "unknown";
+
   try {
     const { id } = await params;
+    draftId = id;
     const draft = await getDraft(id);
 
     if (!draft) {
@@ -30,14 +34,25 @@ export async function GET(_request: Request, { params }: RouteContext) {
 
     return Response.json({ draft });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/drafts/[id]",
+      ...getRequestLogContext(request),
+      metadata: { draftId },
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
+  let draftId = "unknown";
+  let action = "update";
+
   try {
     const { id } = await params;
+    draftId = id;
     const body = (await request.json()) as DraftPatchBody;
+    action = body.action || "update";
     const draft = await getDraft(id);
 
     if (!draft) {
@@ -70,16 +85,31 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     await saveDraft(updatedDraft);
     return Response.json({ draft: updatedDraft });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/drafts/[id]",
+      ...getRequestLogContext(request),
+      metadata: { draftId, action },
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }
 
-export async function DELETE(_request: Request, { params }: RouteContext) {
+export async function DELETE(request: Request, { params }: RouteContext) {
+  let draftId = "unknown";
+
   try {
     const { id } = await params;
+    draftId = id;
     await query(`DELETE FROM content_drafts WHERE id = $1`, [id]);
     return Response.json({ ok: true });
   } catch (error) {
+    logApiError(error, {
+      route: "/api/drafts/[id]",
+      ...getRequestLogContext(request),
+      metadata: { draftId },
+    });
+
     return Response.json({ message: getErrorMessage(error) }, { status: 500 });
   }
 }
