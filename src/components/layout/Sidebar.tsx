@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Brain, Lightbulb, Images, Clapperboard, Archive, CalendarDays } from "lucide-react";
+import { LayoutDashboard, Brain, Lightbulb, Images, Clapperboard, Archive, CalendarDays, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SessionUser } from "@/lib/session";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -15,7 +16,11 @@ const navigation = [
   { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  user: SessionUser;
+}
+
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -25,6 +30,7 @@ export function Sidebar() {
           Digy<span className="text-slate-900">Content</span>
         </h1>
       </div>
+
       <div className="flex flex-1 flex-col overflow-y-auto px-4 py-6">
         <nav className="flex-1 space-y-1.5">
           {navigation.map((item) => {
@@ -52,6 +58,34 @@ export function Sidebar() {
             );
           })}
         </nav>
+      </div>
+
+      <div className="shrink-0 border-t border-slate-200 p-4">
+        <div className="flex items-center gap-3">
+          {user.picture ? (
+            <img
+              src={user.picture}
+              alt={user.name}
+              className="h-8 w-8 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-slate-800">{user.name}</p>
+            <p className="truncate text-xs text-slate-400">{user.email}</p>
+          </div>
+          <a
+            href="/api/auth/logout"
+            title="Sign out"
+            className="shrink-0 rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+          >
+            <LogOut className="h-4 w-4" />
+          </a>
+        </div>
       </div>
     </div>
   );

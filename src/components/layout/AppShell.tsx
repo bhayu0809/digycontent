@@ -1,11 +1,23 @@
 import { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { getSession } from "@/lib/session";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export async function AppShell({ children }: { children: ReactNode }) {
+  const session = await getSession();
+
+  if (!session) {
+    return (
+      <>
+        {children}
+        <Toaster richColors position="top-right" />
+      </>
+    );
+  }
+
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-900 font-sans">
-      <Sidebar />
+      <Sidebar user={session} />
       <main className="flex-1 overflow-y-auto flex flex-col relative">
         {children}
       </main>

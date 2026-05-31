@@ -11,8 +11,11 @@ function getPool() {
   }
 
   if (!pool) {
+    const isLocal = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL);
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
+      max: 3,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
     });
   }
 
@@ -38,9 +41,8 @@ export async function query<T extends QueryResultRow>(text: string, values: unkn
 export async function ensureSchema() {
   if (hasEnsuredSchema) return;
 
-  try {
-    await getPool().query(`
-      CREATE TABLE IF NOT EXISTS brand_profiles (
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS brand_profiles (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         positioning TEXT NOT NULL,
@@ -52,9 +54,8 @@ export async function ensureSchema() {
         content_rules JSONB NOT NULL DEFAULT '[]'::jsonb,
         forbidden_styles JSONB NOT NULL DEFAULT '[]'::jsonb,
         updated_at TIMESTAMPTZ NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS content_drafts (
+      )`,
+    `CREATE TABLE IF NOT EXISTS content_drafts (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         format TEXT NOT NULL CHECK (format IN ('carousel', 'reels')),
@@ -69,12 +70,16 @@ export async function ensureSchema() {
         payload JSONB NOT NULL,
         created_at TIMESTAMPTZ NOT NULL,
         updated_at TIMESTAMPTZ NOT NULL
-      );
+      )`,
+    `CREATE INDEX IF NOT EXISTS content_drafts_updated_at_idx ON content_drafts (updated_at DESC)`,
+    `CREATE INDEX IF NOT EXISTS content_drafts_scheduled_at_idx ON content_drafts (scheduled_at)`,
+    `CREATE INDEX IF NOT EXISTS content_drafts_format_status_idx ON content_drafts (format, status)`,
+  ];
 
-      CREATE INDEX IF NOT EXISTS content_drafts_updated_at_idx ON content_drafts (updated_at DESC);
-      CREATE INDEX IF NOT EXISTS content_drafts_scheduled_at_idx ON content_drafts (scheduled_at);
-      CREATE INDEX IF NOT EXISTS content_drafts_format_status_idx ON content_drafts (format, status);
-    `);
+  try {
+    for (const sql of statements) {
+      await getPool().query(sql);
+    }
   } catch (error) {
     logPostgresError(error, {
       operation: "ensureSchema",
