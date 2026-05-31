@@ -26,6 +26,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID().slice(0, 8);
+  const startedAt = Date.now();
   let draftId = "unknown";
   let draftFormat = "unknown";
 
@@ -44,10 +46,18 @@ export async function POST(request: Request) {
     logApiError(error, {
       route: "/api/drafts",
       ...getRequestLogContext(request),
-      metadata: { draftId, draftFormat },
+      metadata: {
+        requestId,
+        draftId,
+        draftFormat,
+        durationMs: Date.now() - startedAt,
+      },
     });
 
-    return Response.json({ message: getErrorMessage(error) }, { status: 500 });
+    return Response.json(
+      { message: getErrorMessage(error), requestId },
+      { status: 500 }
+    );
   }
 }
 

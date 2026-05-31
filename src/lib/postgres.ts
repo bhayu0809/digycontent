@@ -1,9 +1,11 @@
 import "server-only";
-import { serializeLogError } from "@/lib/api-logging";
+import { describeDbError, emitLog, serializeLogError } from "@/lib/api-logging";
 import { Pool, QueryResultRow } from "pg";
 
 let pool: Pool | undefined;
 let hasEnsuredSchema = false;
+
+const POOL_MAX = 3;
 
 function getPool() {
   if (!process.env.DATABASE_URL) {
@@ -14,8 +16,25 @@ function getPool() {
     const isLocal = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL);
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 3,
+      max: POOL_MAX,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
       ssl: isLocal ? false : { rejectUnauthorized: false },
+    });
+
+    // An idle client dropped by the pooler emits 'error' on the pool. Without a
+    // listener Node treats it as unhandled and crashes the function; log it so
+    // the next "save draft" failure is explained instead of a silent 500.
+    pool.on("error", (error) => {
+      emitLog({
+        tag: "db-error",
+        level: "error",
+        timestamp: new Date().toISOString(),
+        operation: "pool-idle-client",
+        dbError: describeDbError(error),
+        pool: getPoolStats(),
+        error: serializeLogError(error),
+      });
     });
   }
 
@@ -100,8 +119,13 @@ function logPostgresError(
     valuesCount?: number;
   }
 ) {
-  console.error("[db-error]", {
+  emitLog({
+    tag: "db-error",
+    level: "error",
+    timestamp: new Date().toISOString(),
     ...context,
+    dbError: describeDbError(error),
+    pool: getPoolStats(),
     database: getSafeDatabaseUrlInfo(),
     runtime: {
       nodeEnv: process.env.NODE_ENV,
@@ -110,6 +134,24 @@ function logPostgresError(
     },
     error: serializeLogError(error),
   });
+}
+
+/**
+ * Live pool counters at the moment of failure. If `waiting` is high or
+ * `total` is pinned at `max`, the error is connection-pool exhaustion rather
+ * than a bad query — the usual culprit behind "worked, now fails again" on
+ * serverless.
+ */
+function getPoolStats() {
+  if (!pool) return { initialized: false };
+
+  return {
+    initialized: true,
+    total: pool.totalCount,
+    idle: pool.idleCount,
+    waiting: pool.waitingCount,
+    max: POOL_MAX,
+  };
 }
 
 function getSafeDatabaseUrlInfo() {
