@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Force-include public assets — overrides the global ~/.gitignore_global "public"
+# rule that was excluding the whole folder (logo & static assets) from deploys.
+!/public/
+!/public/**
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
