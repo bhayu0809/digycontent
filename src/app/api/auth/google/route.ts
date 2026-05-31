@@ -1,13 +1,14 @@
+import { getRedirectUri } from "@/lib/app-url";
+
 export const runtime = "nodejs";
 
-export function GET() {
+export function GET(request: Request) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     return Response.json({ message: "GOOGLE_CLIENT_ID belum diset." }, { status: 500 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const redirectUri = `${appUrl}/api/auth/callback`;
+  const redirectUri = getRedirectUri(request);
 
   const params = new URLSearchParams({
     client_id: clientId,

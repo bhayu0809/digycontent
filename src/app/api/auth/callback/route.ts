@@ -1,4 +1,5 @@
 import { createSession } from "@/lib/session";
+import { getRedirectUri } from "@/lib/app-url";
 import { redirect } from "next/navigation";
 
 export const runtime = "nodejs";
@@ -26,8 +27,7 @@ export async function GET(request: Request) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const redirectUri = `${appUrl}/api/auth/callback`;
+  const redirectUri = getRedirectUri(request);
   const allowedEmails = (process.env.ALLOWED_EMAILS || "")
     .split(",")
     .map((e) => e.trim())

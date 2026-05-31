@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Images, Clapperboard, CalendarDays } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
   oauth_denied: "Login dibatalkan.",
@@ -13,45 +14,79 @@ const ERROR_MESSAGES: Record<string, string> = {
   not_allowed: "Akun ini tidak diizinkan mengakses aplikasi.",
 };
 
+const FEATURES = [
+  { label: "Carousel", icon: Images, className: "text-violet-600 bg-violet-50 ring-violet-100" },
+  { label: "Reels", icon: Clapperboard, className: "text-sky-600 bg-sky-50 ring-sky-100" },
+  { label: "Calendar", icon: CalendarDays, className: "text-rose-600 bg-rose-50 ring-rose-100" },
+];
+
 function LoginContent() {
   const searchParams = useSearchParams();
   const errorKey = searchParams.get("error");
   const errorMessage = errorKey ? ERROR_MESSAGES[errorKey] ?? "Terjadi kesalahan." : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="mb-8 text-center">
-          <Image
-            src="/digytalab-logo.png"
-            alt="DigytaLab"
-            width={48}
-            height={48}
-            className="mx-auto mb-4 rounded-xl"
-          />
-          <h1 className="text-2xl font-black tracking-tight text-slate-900">
-            Digy<span className="text-[#5B21FA]">Content</span>
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">Internal Content Studio · DigytaLab</p>
-        </div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 px-4">
+      {/* Decorative colorful blobs — soft, not overwhelming */}
+      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-violet-400/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-fuchsia-300/30 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-sky-300/20 blur-3xl" />
 
-        {errorMessage && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {errorMessage}
+      <div className="relative w-full max-w-sm">
+        {/* Gradient ring wrapper */}
+        <div className="rounded-[26px] bg-gradient-to-br from-violet-500 via-fuchsia-500 to-violet-600 p-[1.5px] shadow-2xl shadow-violet-500/20">
+          <div className="rounded-[25px] bg-white/80 p-8 backdrop-blur-xl">
+            <div className="mb-8 text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 shadow-lg shadow-violet-500/30">
+                <Image
+                  src="/digytalab-logo.png"
+                  alt="DigytaLab"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                />
+              </div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900">
+                Digy
+                <span className="bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                  Content
+                </span>
+              </h1>
+              <p className="mt-1.5 text-sm text-slate-500">Internal Content Studio · DigytaLab</p>
+
+              {/* Colorful feature chips */}
+              <div className="mt-5 flex items-center justify-center gap-2">
+                {FEATURES.map((feature) => (
+                  <span
+                    key={feature.label}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${feature.className}`}
+                  >
+                    <feature.icon className="h-3.5 w-3.5" />
+                    {feature.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {errorMessage && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
+
+            <a
+              href="/api/auth/google"
+              className="group flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-violet-200 hover:shadow-md hover:shadow-violet-500/10 active:scale-[0.98]"
+            >
+              <GoogleIcon />
+              Login dengan Google
+            </a>
+
+            <p className="mt-6 text-center text-xs text-slate-400">
+              Hanya akun yang diizinkan yang bisa masuk.
+            </p>
           </div>
-        )}
-
-        <a
-          href="/api/auth/google"
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 active:bg-slate-100"
-        >
-          <GoogleIcon />
-          Login dengan Google
-        </a>
-
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Hanya akun yang diizinkan yang bisa masuk.
-        </p>
+        </div>
       </div>
     </div>
   );
