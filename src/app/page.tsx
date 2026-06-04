@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { draftRepository } from "@/features/drafts/draft.repository";
 import { ContentDraftBase } from "@/types/content";
 import { buttonVariants } from "@/components/ui/button";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
@@ -27,7 +28,7 @@ export default function DashboardPage() {
           title="Dashboard"
           description="Ringkasan produksi konten DigytaLab"
         />
-        <div className="p-4 text-sm text-slate-500 sm:p-6 lg:p-8">Memuat ringkasan...</div>
+        <LoadingScreen label="Memuat ringkasan..." />
       </>
     );
   }
