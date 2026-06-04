@@ -8,7 +8,7 @@ export default function DraftsPage() {
         title="Draft Library" 
         description="Daftar semua konten yang sedang dikerjakan atau sudah selesai."
       />
-      <div className="flex-1 p-8 bg-slate-50">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-slate-50">
         <DraftList />
       </div>
     </div>

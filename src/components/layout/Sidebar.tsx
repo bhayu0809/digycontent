@@ -2,19 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Brain, Lightbulb, Images, Clapperboard, Archive, CalendarDays, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SessionUser } from "@/lib/session";
-
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Brand Brain", href: "/brand", icon: Brain },
-  { name: "Content Ideas", href: "/ideas", icon: Lightbulb },
-  { name: "Carousel Studio", href: "/carousel", icon: Images },
-  { name: "Reels Studio", href: "/reels", icon: Clapperboard },
-  { name: "Draft Library", href: "/drafts", icon: Archive },
-  { name: "Content Calendar", href: "/calendar", icon: CalendarDays },
-];
+import { navigation } from "./navigation";
 
 interface SidebarProps {
   user: SessionUser;
@@ -24,7 +15,7 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full w-64 flex-col bg-white border-r border-slate-200">
+    <div className="hidden h-full w-64 shrink-0 flex-col bg-white border-r border-slate-200 lg:flex">
       <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-200">
         <h1 className="text-xl font-black tracking-tight text-primary">
           Digy<span className="text-slate-900">Content</span>

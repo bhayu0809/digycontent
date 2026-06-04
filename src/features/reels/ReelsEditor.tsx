@@ -126,13 +126,13 @@ export function ReelsEditor() {
     <div className="flex flex-col lg:flex-row h-full bg-white border-t border-slate-200">
       {/* LEFT: Editor Form */}
       <div className="flex-1 flex flex-col border-r border-slate-200 min-w-0 bg-slate-50 overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white shrink-0">
-          <Input 
+        <div className="flex flex-col gap-3 p-3 sm:p-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 bg-white shrink-0">
+          <Input
             value={draft.title}
             onChange={(e) => setDraft({...draft, title: e.target.value})}
-            className="font-bold text-lg border-transparent hover:border-slate-200 focus-visible:ring-primary max-w-sm"
+            className="font-bold text-base sm:text-lg border-slate-200 sm:border-transparent hover:border-slate-200 focus-visible:ring-primary w-full sm:max-w-sm"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <Button variant="outline" size="sm" onClick={saveDraft} disabled={isSaving}>
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? "Menyimpan..." : "Simpan Draft"}
@@ -148,9 +148,9 @@ export function ReelsEditor() {
             </TabsList>
           </div>
           
-          <ScrollArea className="flex-1 p-6">
+          <ScrollArea className="flex-1 p-4 sm:p-6">
             <TabsContent value="scene" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="icon" onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0}>
                     <ChevronLeft className="w-4 h-4" />
@@ -219,13 +219,13 @@ export function ReelsEditor() {
       </div>
 
       {/* RIGHT: Script Preview */}
-      <div className="w-[500px] flex flex-col shrink-0 bg-slate-100 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center shrink-0">
+      <div className="w-full lg:w-[500px] flex flex-col shrink-0 bg-slate-100 overflow-hidden border-t border-slate-200 lg:border-t-0 max-lg:max-h-[60vh]">
+        <div className="p-3 sm:p-4 border-b border-slate-200 bg-white flex flex-wrap gap-2 justify-between items-center shrink-0">
           <span className="font-semibold text-slate-800">Preview Script</span>
           <CopyButton text={generateFullScript()} label="Copy Script" className="border-primary/20 text-[#4F17CE] hover:bg-primary/5" />
         </div>
-        
-        <div className="flex-1 overflow-y-auto p-6 bg-white">
+
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
           <pre className="font-sans text-[13px] leading-relaxed text-slate-700 whitespace-pre-wrap">
             {generateFullScript()}
           </pre>

@@ -8,7 +8,7 @@ export default function CalendarPage() {
         title="Content Calendar" 
         description="Jadwal publikasi konten DigytaLab berdasarkan draft."
       />
-      <div className="flex-1 p-8 bg-slate-50">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 bg-slate-50">
         <CalendarBoard />
       </div>
     </div>

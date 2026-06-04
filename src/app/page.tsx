@@ -27,7 +27,7 @@ export default function DashboardPage() {
           title="Dashboard"
           description="Ringkasan produksi konten DigytaLab"
         />
-        <div className="p-8 text-sm text-slate-500">Memuat ringkasan...</div>
+        <div className="p-4 text-sm text-slate-500 sm:p-6 lg:p-8">Memuat ringkasan...</div>
       </>
     );
   }
@@ -77,16 +77,16 @@ export default function DashboardPage() {
         title="Dashboard"
         description="Ringkasan produksi konten DigytaLab"
       />
-      <div className="space-y-8 p-8">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
           {stats.map((item) => (
-            <div key={item.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">{item.label}</p>
-                  <p className="mt-2 text-3xl font-bold text-slate-900">{item.value}</p>
+            <div key={item.label} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-slate-500 sm:text-sm">{item.label}</p>
+                  <p className="mt-1 text-2xl font-bold text-slate-900 sm:mt-2 sm:text-3xl">{item.value}</p>
                 </div>
-                <item.icon className={cn("h-8 w-8", item.className)} />
+                <item.icon className={cn("h-6 w-6 shrink-0 sm:h-8 sm:w-8", item.className)} />
               </div>
             </div>
           ))}
